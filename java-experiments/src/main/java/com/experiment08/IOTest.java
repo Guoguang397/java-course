@@ -1,8 +1,15 @@
 package com.experiment08;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.*;
+
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+
 public class IOTest {
     public static void main(String[] args) {
-        String fileName = "C:/example/from.txt";
+        String fileName = "D:/example/from.txt";
 
         System.out.println("----- 创建文件 ------");
         createFile(fileName);
@@ -17,17 +24,17 @@ public class IOTest {
         writeToFile(str, fileName);
 
         System.out.println("--------- 基于基本IO流实现文件的复制 ----------");
-        String toFile = "C:/example/to.txt";
+        String toFile = "D:/example/to.txt";
         copyByIO(fileName, toFile);
 
         System.out.println("--------- 基于NIO实现文件的复制 ----------");
-        String toFile2 = "C:/example/nio/to.txt";
-        copyByIO(fileName, toFile2);
+        String toFile2 = "D:/example/to.txt";
+        copyByNIO(fileName, toFile2);
 
         System.out.println("---------- 删除指定文件 -------------");
         deleteFile(toFile);
         System.out.println("---------- 遍历指定目录文件 -------------");
-        String dir = "C:/example";
+        String dir = "D:/example";
         walkDirectories(dir);
     }
 
@@ -38,7 +45,15 @@ public class IOTest {
      * @param fileName
      */
     private static void createFile(String fileName) {
+        try {
+            Files.createDirectories(Paths.get(fileName).getParent());
+            Files.createFile(Paths.get(fileName));
+        }catch (FileAlreadyExistsException ignored) {
 
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -48,7 +63,12 @@ public class IOTest {
      * @param fileName
      * @param content
      */
-    private static void writeToFile(String fileName, String content) {
+    private static void writeToFile(String content, String fileName) {
+        try {
+            Files.write(Paths.get(fileName),content.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -59,7 +79,17 @@ public class IOTest {
      * @param targetFile
      */
     private static void copyByIO(String sourceFile, String targetFile) {
-
+        int b,cnt=0;
+        try(FileInputStream fis = new FileInputStream(sourceFile);
+            FileOutputStream fos = new FileOutputStream(targetFile);) {
+            while((b = fis.read())!=-1) {
+                fos.write(b);
+                cnt++;
+            }
+            System.out.println("Cycle: "+cnt);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -69,7 +99,11 @@ public class IOTest {
      * @param targetFile
      */
     private static void copyByNIO(String sourceFile, String targetFile) {
-
+        try {
+            Files.copy(Paths.get(sourceFile), Paths.get(targetFile), REPLACE_EXISTING);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -78,7 +112,11 @@ public class IOTest {
      * @param fileName
      */
     private static void deleteFile(String fileName) {
-
+        try {
+            Files.delete(Paths.get(fileName));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -87,7 +125,11 @@ public class IOTest {
      * @param dir
      */
     private static void walkDirectories(String dir) {
-
+        try {
+            Files.walk(Paths.get(dir)).forEach(System.out::println);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
 
